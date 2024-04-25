@@ -1,11 +1,9 @@
 package com.example.sunnyweather.logic.network
 
-import com.example.sunnyweather.logic.model.PlaceService
+import com.sunnyweather.android.logic.network.WeatherService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.await
-import retrofit2.http.Query
 import java.lang.RuntimeException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -13,7 +11,10 @@ import kotlin.coroutines.suspendCoroutine
 
 object SunnyWeatherNetwork {
     private val placeService = ServiceCreator.create<PlaceService>()
+    private val weatherService = ServiceCreator.create<WeatherService>()
     suspend fun serchPlaces(query: String) = placeService.serchPlaces(query).await()
+    suspend fun getDailyWeather(lng: String, lat:String) = weatherService.getDailyWeather(lng,lat).await()
+    suspend fun getRealtimeWeather(lng: String, lat:String) = weatherService.getRealtimeWeather(lng,lat).await()
     private suspend fun <T> Call<T>.await():T{
         return suspendCoroutine { continuation ->
             enqueue(object : Callback<T>{
