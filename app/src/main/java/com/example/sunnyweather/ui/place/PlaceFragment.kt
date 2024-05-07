@@ -11,12 +11,12 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.filepersistencetest.R
 import com.example.filepersistencetest.databinding.FragmentPlaceBinding
+import com.example.sunnyweather.MainActivity
 import com.example.sunnyweather.ui.weather.WeatherActivity
 
 
@@ -35,7 +35,7 @@ class PlaceFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if ( viewModel.isPlaceSaved()) {
+        if (activity is MainActivity && viewModel.isPlaceSaved()) {
             val place = viewModel.getSavedPlace() //直接获取之前存储的
             val intent = Intent(context, WeatherActivity::class.java).apply {
                 putExtra("location_lng", place.location.lng)

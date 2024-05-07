@@ -1,13 +1,17 @@
 package com.example.sunnyweather.ui.weather
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.filepersistencetest.R
@@ -19,35 +23,68 @@ import java.util.Locale
 
 class WeatherActivity : AppCompatActivity() {
     lateinit var binding: ActivityWeatherBinding
-    val viewModel by lazy { ViewModelProvider(this).get(WeatherViewModel::class.java) }
+    val viewModel by lazy {
+        ViewModelProvider(this).get(WeatherViewModel::class.java) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWeatherBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //第一次初始化时，数据从intent获取
-        if (viewModel.locationLat.isNotEmpty()){
+        Log.d("WeatherActivity","第一次跳转,为空 ${viewModel.locationLat.isEmpty()}+${viewModel.locationLat.toString()}")
+//        第一次初始化时，数据从intent获取
+        if (viewModel.locationLat.isEmpty()){
             viewModel.locationLat = intent.getStringExtra("location_lat") ?:""
+            Log.d("WeatherActivity",viewModel.locationLat)
         }
-        if (viewModel.locationLng.isNotEmpty()){
+        if (viewModel.locationLng.isEmpty()){
             viewModel.locationLng = intent.getStringExtra("location_lng")?:""
+            Log.d("WeatherActivity",viewModel.locationLng)
         }
-        if (viewModel.placeName.isNotEmpty()){
+        if (viewModel.placeName.isEmpty()){
             viewModel.placeName = intent.getStringExtra("place_name")?:""
+            Log.d("WeatherActivity",viewModel.locationLng)
+
         }
+
         viewModel.weatherLiveData.observe(this, Observer{ result ->
             val weather = result.getOrNull() //getOrNull()用于从 Result 实例中获取包含在 Result.success 中的数据
             if (weather != null){
+                Log.d("WeatherActivity", "Result is not null: $result")
                 showWeatherInfo(weather)
             }else{
                 Log.d("WeatherActivity", "Result is null: $result")
                 Toast.makeText(this,"无法成功获取天气信息",Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            binding.swipeRefresh.isRefreshing = false
         })
+        binding.swipeRefresh.setColorSchemeResources(R.color.black)
+        refreshWeather()
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
         //第一次执行从空变成有数据，observe也会观察到，然后调用showWeatherInfo
-        viewModel.refreshWeather(viewModel.locationLng,viewModel.locationLat)
+//        viewModel.refreshWeather(viewModel.locationLng,viewModel.locationLat)
+        binding.now.navBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerStateChanged(newState: Int) {}
+
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+
+            override fun onDrawerOpened(drawerView: View) {}
+
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+        })
     }
 
+fun refreshWeather(){
+    viewModel.refreshWeather(viewModel.locationLng,viewModel.locationLat)
+    binding.swipeRefresh.isRefreshing = true
+}
     private fun showWeatherInfo(weather: Weather) {
         binding.now.placeName.text = viewModel.placeName
         val realtime = weather.realtime
