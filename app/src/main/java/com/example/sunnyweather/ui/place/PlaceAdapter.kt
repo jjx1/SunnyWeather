@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.filepersistencetest.R
 import com.example.sunnyweather.logic.model.Place
@@ -44,6 +43,7 @@ RecyclerView.Adapter<PlaceAdapter.ViewHolder>(){
                 activity.viewModel.locationLng = place.location.lng
                 activity.viewModel.locationLat = place.location.lat
                 activity.viewModel.placeName = place.name
+                fragment.viewModel.savePlace(place)
                 activity.refreshWeather()
             } else {
                 val intent = Intent(parent.context, WeatherActivity::class.java).apply {
